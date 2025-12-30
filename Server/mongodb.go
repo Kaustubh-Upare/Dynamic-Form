@@ -6,9 +6,10 @@ import (
 	"os"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/v2/mongo"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var (
@@ -33,22 +34,26 @@ type FormSubmission struct {
 	CreatedAt time.Time          `json:"createdAt" bson:"createdAt"`
 }
 
-func InitMongo() {
-	mongoUri := os.Getenv("MongoDbUri")
+func InitMongoDB() {
+	mongoURI := os.Getenv("MONGODB_URI")
 	if mongoURI == "" {
 		log.Fatal("MONGODB_URI environment variable is not set")
 	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	clientOptions := options.Client().ApplyURI(mongoUri)
+	clientOptions := options.Client().ApplyURI(mongoURI)
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Ping the database
 	if err := client.Ping(ctx, nil); err != nil {
 		log.Fatal(err)
 	}
+
 	mongoClient = client
 	dbName := os.Getenv("MONGODB_DB_NAME")
 	if dbName == "" {
@@ -56,7 +61,17 @@ func InitMongo() {
 	}
 	database = client.Database(dbName)
 	collection = database.Collection("submissions")
+
 	log.Println("Connected to MongoDB!")
+}
+
+func DisconnectMongoDB() {
+	if mongoClient != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		mongoClient.Disconnect(ctx)
+		log.Println("Disconnected from MongoDB")
+	}
 }
 
 func SaveFormSubmission(submission *FormSubmission) error {
@@ -71,4 +86,22 @@ func SaveFormSubmission(submission *FormSubmission) error {
 
 	submission.ID = result.InsertedID.(primitive.ObjectID)
 	return nil
+}
+
+func GetAllSubmissions() ([]FormSubmission, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := collection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var submissions []FormSubmission
+	if err := cursor.All(ctx, &submissions); err != nil {
+		return nil, err
+	}
+
+	return submissions, nil
 }
