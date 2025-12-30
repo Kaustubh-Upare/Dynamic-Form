@@ -1,9 +1,6 @@
-import React from 'react'
 import DynamicForm from './DynamicForm'
 
-type Props = {}
-
-const Home = (props: Props) => {
+const Home = () => {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-5xl">
