@@ -1,55 +1,19 @@
-export const submitFormData=(formData:FormData)=>{
-    try {
-    const totalRows = Number.parseInt(formData.get("totalRows") as string)
+export async function submitFormData(formData: FormData) {
+  const res = await fetch(`http://localhost:8080/api/upload`, {
+    method: "POST",
+    body: formData,
+    // do NOT set Content-Type when sending FormData (boundary is required)
+  })
 
-    const rows = []
+  const data = await res.json().catch(() => null)
 
-    for (let i = 0; i < totalRows; i++) {
-      const description = formData.get(`row_${i}_description`) as string
-      const mediaCount = Number.parseInt(formData.get(`row_${i}_mediaCount`) as string)
-
-      const mediaFiles = []
-      for (let j = 0; j < mediaCount; j++) {
-        const mediaFile = formData.get(`row_${i}_media_${j}`) as File
-        if (mediaFile) {
-          mediaFiles.push({
-            name: mediaFile.name,
-            size: mediaFile.size,
-            type: mediaFile.type,
-            isVideo: mediaFile.type.startsWith("video/"),
-            isImage: mediaFile.type.startsWith("image/"),
-          })
-        }
-      }
-
-      rows.push({
-        description,
-        mediaFiles,
-        mediaCount,
-      })
-    }
-
-    console.log("[v0] Form data received on server:", {
-      totalRows,
-      rows,
-    })
-
-    // Here you would typically:
-    // 1. Validate the data
-    // 2. Save to database
-    // 3. Upload media files (images/videos) to storage (e.g., Vercel Blob)
-    // 4. Return success/error response
-
-    return {
-      success: true,
-      message: "Form data with images and videos received successfully",
-      data: { totalRows, rows },
-    }
-  } catch (error) {
-    console.error("[v0] Error processing form data:", error)
+  if (!res.ok) {
     return {
       success: false,
-      message: "Failed to process form data",
+      message: data?.message ?? `Upload failed (${res.status})`,
+      data: data ?? null,
     }
   }
+
+  return data // should already be { success, message, data } from your Go API
 }

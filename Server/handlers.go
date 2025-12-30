@@ -61,6 +61,8 @@ func HandleUpload(c *fiber.Ctx) error {
 					fileIndex++
 
 					// Upload to Cloudinary
+					log.Printf("Uploading: filename=%s size=%d content-type=%s",
+						file.Filename, file.Size, file.Header.Get("Content-Type"))
 					url, mediaType, err := UploadToCloudinary(file)
 					if err != nil {
 						log.Printf("Error uploading file: %v", err)

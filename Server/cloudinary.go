@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"mime/multipart"
 	"os"
 	"strings"
@@ -14,6 +15,15 @@ import (
 
 var cld *cloudinary.Cloudinary
 
+func MustInitCloudinary() {
+	var err error
+	cld, err = InitCloudinary()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Cloudinary configured cloud=%s", cld.Config.Cloud.CloudName)
+}
+
 func InitCloudinary() (*cloudinary.Cloudinary, error) {
 	cloudName := os.Getenv("CLOUDINARY_CLOUD_NAME")
 	apiKey := os.Getenv("CLOUDINARY_API_KEY")
@@ -22,7 +32,6 @@ func InitCloudinary() (*cloudinary.Cloudinary, error) {
 	if cloudName == "" || apiKey == "" || apiSecret == "" {
 		return nil, fmt.Errorf("Cloudinary credentials not set")
 	}
-
 	cld, err := cloudinary.NewFromParams(cloudName, apiKey, apiSecret)
 	if err != nil {
 		return nil, err
@@ -65,6 +74,14 @@ func UploadToCloudinary(file *multipart.FileHeader) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
+	log.Printf("cloudinary result: public_id=%s secure_url=%q url=%q bytes=%d resource_type=%s format=%s",
+		uploadResult.PublicID,
+		uploadResult.SecureURL,
+		uploadResult.URL,
+		uploadResult.Bytes,
+		uploadResult.ResourceType,
+		uploadResult.Format,
+	)
 
 	return uploadResult.SecureURL, resourceType, nil
 }

@@ -1,4 +1,3 @@
-"use client"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -55,15 +54,23 @@ export default function DynamicForm() {
     try {
       const formData = new FormData()
 
-      rows.forEach((row, index) => {
-        formData.append(`row_${index}_description`, row.description)
-        row.media.forEach((file, fileIndex) => {
-          formData.append(`row_${index}_media_${fileIndex}`, file)
+      // rows.forEach((row, index) => {
+      //   formData.append(`row_${index}_description`, row.description)
+      //   row.media.forEach((file, fileIndex) => {
+      //     formData.append(`row_${index}_media_${fileIndex}`, file)
+      //   })
+      //   formData.append(`row_${index}_mediaCount`, row.media.length.toString())
+      // })
+
+      rows.forEach((row)=>{
+        formData.append("descriptions", row.description)
+        formData.append("fileCount", String(row.media.length))
+        row.media.forEach((file) => {
+          formData.append("files", file)
         })
-        formData.append(`row_${index}_mediaCount`, row.media.length.toString())
       })
 
-      formData.append("totalRows", rows.length.toString())
+      // formData.append("totalRows", rows.length.toString())
 
       const result = await submitFormData(formData)
 

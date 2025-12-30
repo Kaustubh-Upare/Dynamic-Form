@@ -17,8 +17,9 @@ func main() {
 
 	// Initialize MongoDB connection
 	InitMongoDB()
-	defer DisconnectMongoDB()
 
+	defer DisconnectMongoDB()
+	MustInitCloudinary()
 	// Create Fiber app
 	app := fiber.New(fiber.Config{
 		BodyLimit: 100 * 1024 * 1024, // 100MB limit for video uploads
