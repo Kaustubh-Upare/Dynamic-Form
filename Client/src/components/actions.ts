@@ -1,5 +1,6 @@
 export async function submitFormData(formData: FormData) {
-  const res = await fetch(`http://13.201.25.88:8080/api/upload`, {
+  // Fixed this error
+  const res = await fetch(`https://api.13.201.25.88.nip.io/api/upload`, {
     method: "POST",
     body: formData,
     // do NOT set Content-Type when sending FormData (boundary is required)
