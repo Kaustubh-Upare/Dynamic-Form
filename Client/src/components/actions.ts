@@ -1,6 +1,6 @@
 export async function submitFormData(formData: FormData) {
   // Fixed this error
-  const res = await fetch(`https://api.13.201.25.88.nip.io/api/upload`, {
+  const res = await fetch(import.meta.env.VITE_API_BASE_URL, {
     method: "POST",
     body: formData,
     // do NOT set Content-Type when sending FormData (boundary is required)
